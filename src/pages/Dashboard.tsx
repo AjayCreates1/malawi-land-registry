@@ -18,25 +18,44 @@ const Dashboard = () => {
 
   const checkAuth = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        navigate("/auth");
+        return;
+      }
+
       if (!session) {
+        console.log("No session found, redirecting to auth");
         navigate("/auth");
         return;
       }
 
       setUserId(session.user.id);
+      console.log("User ID:", session.user.id);
 
-      // Get user role
-      const { data: roleData } = await supabase
+      // Get user role - use maybeSingle to handle cases where no role exists yet
+      const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
-      if (roleData) {
-        setUserRole(roleData.role);
+      if (roleError) {
+        console.error("Role fetch error:", roleError);
+        navigate("/auth");
+        return;
       }
+
+      if (!roleData) {
+        console.error("No role found for user:", session.user.id);
+        navigate("/auth");
+        return;
+      }
+
+      console.log("User role:", roleData.role);
+      setUserRole(roleData.role);
     } catch (error) {
       console.error("Auth check error:", error);
       navigate("/auth");
