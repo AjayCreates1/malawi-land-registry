@@ -43,10 +43,16 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
+        // Determine safe role to assign (prevent self-assigning admin)
+        let roleToAssign = signupData.role;
+        if (roleToAssign === "admin") {
+          toast.info("Admin accounts are assigned by administrators. You'll start as a regular user.");
+          roleToAssign = "user";
+        }
         // Add user role
         const { error: roleError } = await supabase
           .from("user_roles")
-          .insert({ user_id: data.user.id, role: signupData.role });
+          .insert({ user_id: data.user.id, role: roleToAssign });
 
         if (roleError) {
           console.error("Role assignment error:", roleError);
@@ -73,6 +79,24 @@ const Auth = () => {
       });
 
       if (error) throw error;
+
+      const user = data.user;
+      if (user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!roleData) {
+          // Ensure a default role for legacy accounts
+          const { error: assignErr } = await supabase
+            .from("user_roles")
+            .insert({ user_id: user.id, role: "user" });
+          if (assignErr) {
+            console.error("Role ensure error:", assignErr);
+          }
+        }
+      }
 
       toast.success("Welcome back!");
       navigate("/dashboard");
