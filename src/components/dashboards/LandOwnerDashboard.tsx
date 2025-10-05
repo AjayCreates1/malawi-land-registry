@@ -36,7 +36,7 @@ const LandOwnerDashboard = ({ userId }: Props) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-background/95 backdrop-blur">
+      <header className="border-b bg-background/95 backdrop-blur animate-slide-up">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
@@ -56,7 +56,7 @@ const LandOwnerDashboard = ({ userId }: Props) => {
       </header>
 
       <main className="container py-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between animate-fade-in">
           <div>
             <h1 className="text-3xl font-bold mb-2">Welcome back, {profile?.full_name}!</h1>
             <p className="text-muted-foreground">Manage your land properties and registrations</p>

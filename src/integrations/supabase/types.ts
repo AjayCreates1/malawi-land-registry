@@ -20,6 +20,7 @@ export type Database = {
           applicant_id: string
           boundaries: string | null
           district: string
+          document_url: string | null
           id: string
           land_size: number
           land_use: string
@@ -37,6 +38,7 @@ export type Database = {
           applicant_id: string
           boundaries?: string | null
           district: string
+          document_url?: string | null
           id?: string
           land_size: number
           land_use: string
@@ -54,6 +56,7 @@ export type Database = {
           applicant_id?: string
           boundaries?: string | null
           district?: string
+          document_url?: string | null
           id?: string
           land_size?: number
           land_use?: string
@@ -73,6 +76,7 @@ export type Database = {
           boundaries: string | null
           created_at: string | null
           district: string
+          document_url: string | null
           id: string
           land_size: number
           land_use: string
@@ -88,6 +92,7 @@ export type Database = {
           boundaries?: string | null
           created_at?: string | null
           district: string
+          document_url?: string | null
           id?: string
           land_size: number
           land_use: string
@@ -103,6 +108,7 @@ export type Database = {
           boundaries?: string | null
           created_at?: string | null
           district?: string
+          document_url?: string | null
           id?: string
           land_size?: number
           land_use?: string

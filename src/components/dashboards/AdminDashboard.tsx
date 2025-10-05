@@ -54,7 +54,7 @@ const AdminDashboard = ({ userId }: Props) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-background/95 backdrop-blur">
+      <header className="border-b bg-background/95 backdrop-blur animate-slide-up">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
@@ -74,13 +74,13 @@ const AdminDashboard = ({ userId }: Props) => {
       </header>
 
       <main className="container py-8 space-y-8">
-        <div>
+        <div className="animate-fade-in">
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage land registrations and system users</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6 animate-slide-up">
           <Card className="border-2 hover:border-primary transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Registered Lands</CardTitle>
