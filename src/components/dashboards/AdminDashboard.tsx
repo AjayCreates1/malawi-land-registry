@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, FileText, MapPin, Users, LogOut, CheckCircle, XCircle } from "lucide-react";
+import { Shield, FileText, MapPin, Users, LogOut, CheckCircle, XCircle, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PendingRegistrationsList from "@/components/lists/PendingRegistrationsList";
 import LandsList from "@/components/lists/LandsList";
+import UserManagement from "@/components/dashboards/UserManagement";
 
 interface Props {
   userId: string;
@@ -123,6 +124,10 @@ const AdminDashboard = ({ userId }: Props) => {
               <MapPin className="h-4 w-4 mr-2" />
               All Registered Lands
             </TabsTrigger>
+            <TabsTrigger value="users">
+              <UserCog className="h-4 w-4 mr-2" />
+              User Management
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending">
@@ -147,6 +152,10 @@ const AdminDashboard = ({ userId }: Props) => {
                 <LandsList showMap showOwner />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement />
           </TabsContent>
         </Tabs>
       </main>

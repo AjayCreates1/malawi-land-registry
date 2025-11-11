@@ -23,9 +23,35 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
   const [loading, setLoading] = useState(true);
   const [apiKey, setApiKey] = useState("");
   const [needsApiKey, setNeedsApiKey] = useState(false);
+  const mapLoadedRef = useRef(false);
 
   useEffect(() => {
-    initMap();
+    const fetchApiKey = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-maps-key`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const result = await response.json();
+        if (result.data?.apiKey) {
+          setApiKey(result.data.apiKey);
+        } else {
+          setNeedsApiKey(true);
+          setLoading(false);
+        }
+      } catch {
+        setNeedsApiKey(true);
+        setLoading(false);
+      }
+    };
+    fetchApiKey();
+  }, []);
+
+  useEffect(() => {
+    if (apiKey && !mapLoadedRef.current) {
+      initMap();
+    }
   }, [apiKey]);
 
   useEffect(() => {
@@ -41,7 +67,7 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
   }, [map, markers]);
 
   const initMap = async () => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || mapLoadedRef.current) return;
 
     try {
       const key = apiKey || "";
@@ -52,6 +78,32 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
         return;
       }
 
+      // Check if Google Maps is already loaded
+      if ((window as any).google?.maps) {
+        const mapInstance = new (window as any).google.maps.Map(mapRef.current, {
+          center,
+          zoom,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+        });
+
+        if (onMapClick) {
+          mapInstance.addListener("click", (e: any) => {
+            if (e.latLng) {
+              onMapClick(e.latLng.lat(), e.latLng.lng());
+            }
+          });
+        }
+
+        setMap(mapInstance);
+        setNeedsApiKey(false);
+        setLoading(false);
+        mapLoadedRef.current = true;
+        return;
+      }
+
+      // Load Google Maps script
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`;
       script.async = true;
@@ -77,10 +129,12 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
         setMap(mapInstance);
         setNeedsApiKey(false);
         setLoading(false);
+        mapLoadedRef.current = true;
       };
 
       script.onerror = () => {
         toast.error("Failed to load Google Maps");
+        setNeedsApiKey(true);
         setLoading(false);
       };
 
@@ -88,6 +142,7 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
     } catch (error) {
       console.error("Map loading error:", error);
       toast.error("Failed to load map");
+      setNeedsApiKey(true);
       setLoading(false);
     }
   };
