@@ -79,6 +79,7 @@ const PendingRegistrationsList = ({ adminId, onUpdate }: Props) => {
         longitude: registration.longitude,
         district: registration.district,
         boundaries: registration.boundaries,
+        document_url: registration.document_url,
         status: "active",
       });
 
