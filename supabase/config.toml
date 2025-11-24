@@ -1,1 +1,4 @@
 project_id = "kplhswiecwkklntshthv"
+
+[functions.get-maps-key]
+verify_jwt = false
