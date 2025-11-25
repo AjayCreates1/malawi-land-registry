@@ -3,6 +3,8 @@ import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface MapProps {
   center?: { lat: number; lng: number };
@@ -18,8 +20,8 @@ interface MapProps {
 }
 
 const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [], onMapClick, height = "600px" }: MapProps) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<any>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
   const [loading, setLoading] = useState(true);
   const [apiKey, setApiKey] = useState("");
   const [needsApiKey, setNeedsApiKey] = useState(false);
@@ -55,19 +57,18 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
   }, [apiKey]);
 
   useEffect(() => {
-    if (map && markers.length > 0 && (window as any).google) {
+    if (map.current && markers.length > 0) {
       markers.forEach((marker) => {
-        new (window as any).google.maps.Marker({
-          position: marker.position,
-          map: map,
-          title: marker.title,
-        });
+        new maplibregl.Marker()
+          .setLngLat([marker.position.lng, marker.position.lat])
+          .setPopup(new maplibregl.Popup().setText(marker.title))
+          .addTo(map.current!);
       });
     }
-  }, [map, markers]);
+  }, [map.current, markers]);
 
   const initMap = async () => {
-    if (!mapRef.current || mapLoadedRef.current) return;
+    if (!mapContainer.current || mapLoadedRef.current) return;
 
     try {
       const key = apiKey || "";
@@ -78,67 +79,34 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
         return;
       }
 
-      // Check if Google Maps is already loaded
-      if ((window as any).google?.maps) {
-        const mapInstance = new (window as any).google.maps.Map(mapRef.current, {
-          center,
-          zoom,
-          mapTypeControl: true,
-          streetViewControl: true,
-          fullscreenControl: true,
+      const mapInstance = new maplibregl.Map({
+        container: mapContainer.current,
+        style: `https://api.maptiler.com/maps/satellite/style.json?key=${key}`,
+        center: [center.lng, center.lat],
+        zoom: zoom,
+      });
+
+      mapInstance.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+      if (onMapClick) {
+        mapInstance.on('click', (e) => {
+          onMapClick(e.lngLat.lat, e.lngLat.lng);
         });
-
-        if (onMapClick) {
-          mapInstance.addListener("click", (e: any) => {
-            if (e.latLng) {
-              onMapClick(e.latLng.lat(), e.latLng.lng());
-            }
-          });
-        }
-
-        setMap(mapInstance);
-        setNeedsApiKey(false);
-        setLoading(false);
-        mapLoadedRef.current = true;
-        return;
       }
 
-      // Load Google Maps script
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      
-      script.onload = () => {
-        const mapInstance = new (window as any).google.maps.Map(mapRef.current, {
-          center,
-          zoom,
-          mapTypeControl: true,
-          streetViewControl: true,
-          fullscreenControl: true,
-        });
-
-        if (onMapClick) {
-          mapInstance.addListener("click", (e: any) => {
-            if (e.latLng) {
-              onMapClick(e.latLng.lat(), e.latLng.lng());
-            }
-          });
-        }
-
-        setMap(mapInstance);
+      mapInstance.on('load', () => {
         setNeedsApiKey(false);
         setLoading(false);
         mapLoadedRef.current = true;
-      };
+      });
 
-      script.onerror = () => {
-        toast.error("Failed to load Google Maps");
+      mapInstance.on('error', () => {
+        toast.error("Failed to load map");
         setNeedsApiKey(true);
         setLoading(false);
-      };
+      });
 
-      document.head.appendChild(script);
+      map.current = mapInstance;
     } catch (error) {
       console.error("Map loading error:", error);
       toast.error("Failed to load map");
@@ -151,22 +119,22 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
     return (
       <div className="border rounded-lg p-8 bg-muted/50" style={{ height }}>
         <div className="max-w-md mx-auto space-y-4 text-center">
-          <h3 className="text-lg font-semibold">Google Maps API Key Required</h3>
+          <h3 className="text-lg font-semibold">MapTiler API Key Required</h3>
           <p className="text-sm text-muted-foreground">
-            Please enter your Google Maps API key to view the map. Get your key from{" "}
+            Please enter your MapTiler API key to view the map. Get your key from{" "}
             <a
-              href="https://console.cloud.google.com/google/maps-apis"
+              href="https://cloud.maptiler.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
-              Google Cloud Console
+              MapTiler Cloud
             </a>
           </p>
           <div className="space-y-2">
             <Input
               type="text"
-              placeholder="Enter Google Maps API Key"
+              placeholder="Enter MapTiler API Key"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
             />
@@ -186,7 +154,7 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       )}
-      <div ref={mapRef} className="w-full h-full" />
+      <div ref={mapContainer} className="w-full h-full" />
     </div>
   );
 };
