@@ -95,10 +95,16 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
       }
 
       mapInstance.on('load', async () => {
+        console.log('Map loaded, loading districts...');
+        
         // Load Malawi districts GeoJSON
         try {
           const response = await fetch('/malawi-districts.geojson');
+          if (!response.ok) {
+            throw new Error(`Failed to fetch: ${response.status}`);
+          }
           const geojsonData = await response.json();
+          console.log('GeoJSON loaded, features:', geojsonData.features?.length);
           
           // Add source
           mapInstance.addSource('malawi-districts', {
@@ -106,26 +112,26 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
             data: geojsonData
           });
           
-          // Add district boundaries layer
+          // Add district fill layer (add first so it's below)
+          mapInstance.addLayer({
+            id: 'district-fills',
+            type: 'fill',
+            source: 'malawi-districts',
+            paint: {
+              'fill-color': '#FFD700',
+              'fill-opacity': 0.15
+            }
+          });
+          
+          // Add district boundaries layer (thicker and more visible)
           mapInstance.addLayer({
             id: 'district-boundaries',
             type: 'line',
             source: 'malawi-districts',
             paint: {
               'line-color': '#FFD700',
-              'line-width': 2,
-              'line-opacity': 0.8
-            }
-          });
-          
-          // Add district fill layer
-          mapInstance.addLayer({
-            id: 'district-fills',
-            type: 'fill',
-            source: 'malawi-districts',
-            paint: {
-              'fill-color': '#1a1a1a',
-              'fill-opacity': 0.1
+              'line-width': 3,
+              'line-opacity': 1
             }
           });
           
@@ -136,17 +142,20 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
             source: 'malawi-districts',
             layout: {
               'text-field': ['get', 'shapeName'],
-              'text-size': 12,
+              'text-size': 14,
               'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold']
             },
             paint: {
-              'text-color': '#FFD700',
+              'text-color': '#FFFFFF',
               'text-halo-color': '#000000',
               'text-halo-width': 2
             }
           });
+          
+          console.log('Districts layers added successfully');
         } catch (error) {
           console.error('Error loading districts:', error);
+          toast.error('Failed to load district boundaries');
         }
         
         setNeedsApiKey(false);
