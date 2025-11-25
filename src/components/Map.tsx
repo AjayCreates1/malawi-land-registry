@@ -135,13 +135,13 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
             }
           });
           
-          // Add district labels
+          // Add district labels (fallback across common name fields)
           mapInstance.addLayer({
             id: 'district-labels',
             type: 'symbol',
             source: 'malawi-districts',
             layout: {
-              'text-field': ['get', 'shapeName'],
+              'text-field': ['coalesce', ['get', 'shapeName'], ['get', 'ADM1_EN'], ['get', 'NAME_1'], ['get', 'name']],
               'text-size': 14,
               'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold']
             },
