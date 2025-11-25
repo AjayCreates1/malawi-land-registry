@@ -11,17 +11,8 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
-
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ data: null, error: 'API key not configured' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      );
-    }
+    // MapTiler API key
+    const apiKey = '8F3Vs9a07aV0M2hQCd65';
 
     return new Response(
       JSON.stringify({ data: { apiKey } }),
