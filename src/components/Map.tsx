@@ -94,7 +94,61 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
         });
       }
 
-      mapInstance.on('load', () => {
+      mapInstance.on('load', async () => {
+        // Load Malawi districts GeoJSON
+        try {
+          const response = await fetch('/malawi-districts.geojson');
+          const geojsonData = await response.json();
+          
+          // Add source
+          mapInstance.addSource('malawi-districts', {
+            type: 'geojson',
+            data: geojsonData
+          });
+          
+          // Add district boundaries layer
+          mapInstance.addLayer({
+            id: 'district-boundaries',
+            type: 'line',
+            source: 'malawi-districts',
+            paint: {
+              'line-color': '#FFD700',
+              'line-width': 2,
+              'line-opacity': 0.8
+            }
+          });
+          
+          // Add district fill layer
+          mapInstance.addLayer({
+            id: 'district-fills',
+            type: 'fill',
+            source: 'malawi-districts',
+            paint: {
+              'fill-color': '#1a1a1a',
+              'fill-opacity': 0.1
+            }
+          });
+          
+          // Add district labels
+          mapInstance.addLayer({
+            id: 'district-labels',
+            type: 'symbol',
+            source: 'malawi-districts',
+            layout: {
+              'text-field': ['get', 'shapeName'],
+              'text-size': 12,
+              'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold']
+            },
+            paint: {
+              'text-color': '#FFD700',
+              'text-halo-color': '#000000',
+              'text-halo-width': 2
+            }
+          });
+        } catch (error) {
+          console.error('Error loading districts:', error);
+        }
+        
         setNeedsApiKey(false);
         setLoading(false);
         mapLoadedRef.current = true;
