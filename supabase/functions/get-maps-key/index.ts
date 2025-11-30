@@ -12,7 +12,7 @@ serve(async (req) => {
 
   try {
     // MapTiler API key
-    const apiKey = '8F3Vs9a07aV0M2hQCd65';
+    const apiKey = 'aQGSTvwPxi3wKiQwyNwz';
 
     return new Response(
       JSON.stringify({ data: { apiKey } }),

@@ -81,7 +81,7 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
 
       const mapInstance = new maplibregl.Map({
         container: mapContainer.current,
-        style: `https://api.maptiler.com/maps/satellite/style.json?key=${key}`,
+        style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${key}`,
         center: [center.lng, center.lat],
         zoom: zoom,
       });
