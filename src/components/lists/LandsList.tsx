@@ -60,6 +60,15 @@ const LandsList = ({ ownerId, showMap = false, showOwner = false, searchQuery = 
     return <div className="text-center py-8">Loading...</div>;
   }
 
+  if (lands.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>No registered lands found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {showMap && (
@@ -73,68 +82,61 @@ const LandsList = ({ ownerId, showMap = false, showOwner = false, searchQuery = 
         />
       )}
 
-      {lands.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No registered lands found</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {lands.map((land) => (
-            <Card key={land.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">{land.location_name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">Title Deed: {land.title_deed_number}</p>
-                    {showOwner && land.profiles && (
-                      <p className="text-sm text-muted-foreground">Owner: {land.profiles.full_name}</p>
-                    )}
-                  </div>
-                  <Badge variant="secondary">{land.land_use}</Badge>
+      <div className="grid gap-4">
+        {lands.map((land) => (
+          <Card key={land.id} className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg">{land.location_name}</CardTitle>
+                  <p className="text-sm text-muted-foreground">Title Deed: {land.title_deed_number}</p>
+                  {showOwner && land.profiles && (
+                    <p className="text-sm text-muted-foreground">Owner: {land.profiles.full_name}</p>
+                  )}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Ruler className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-muted-foreground">Size</p>
-                      <p className="font-medium">{land.land_size} ha</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-muted-foreground">District</p>
-                      <p className="font-medium">{land.district}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-muted-foreground">Coordinates</p>
-                      <p className="font-medium text-xs">
-                        {parseFloat(land.latitude).toFixed(4)}, {parseFloat(land.longitude).toFixed(4)}
-                      </p>
-                    </div>
-                  </div>
+                <Badge variant="secondary">{land.land_use}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <Ruler className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-muted-foreground">Status</p>
-                    <Badge variant="default" className="mt-1">Active</Badge>
+                    <p className="text-muted-foreground">Size</p>
+                    <p className="font-medium">{land.land_size} ha</p>
                   </div>
                 </div>
-                {land.boundaries && (
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-1">Boundaries:</p>
-                    <p className="text-sm">{land.boundaries}</p>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-muted-foreground">District</p>
+                    <p className="font-medium">{land.district}</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-muted-foreground">Coordinates</p>
+                    <p className="font-medium text-xs">
+                      {parseFloat(land.latitude).toFixed(4)}, {parseFloat(land.longitude).toFixed(4)}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Status</p>
+                  <Badge variant="default" className="mt-1">Active</Badge>
+                </div>
+              </div>
+              {land.boundaries && (
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-sm text-muted-foreground mb-1">Boundaries:</p>
+                  <p className="text-sm">{land.boundaries}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
