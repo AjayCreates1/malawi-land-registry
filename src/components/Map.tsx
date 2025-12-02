@@ -23,28 +23,43 @@ const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [],
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Initialize map with MapTiler key
-    const mapInstance = new maplibregl.Map({
-      container: mapContainer.current,
-      style: `https://api.maptiler.com/maps/streets-v2/style.json?key=aQGSTvwPxi3wKiQwyNwz`,
-      center: [center.lng, center.lat],
-      zoom: zoom,
-    });
+    try {
+      console.log("Initializing map with center:", center, "zoom:", zoom);
 
-    mapInstance.addControl(new maplibregl.NavigationControl(), 'top-right');
-
-    if (onMapClick) {
-      mapInstance.on('click', (e) => {
-        onMapClick(e.lngLat.lat, e.lngLat.lng);
+      const mapInstance = new maplibregl.Map({
+        container: mapContainer.current,
+        style: "https://api.maptiler.com/maps/streets-v2/style.json?key=aQGSTvwPxi3wKiQwyNwz",
+        center: [center.lng, center.lat],
+        zoom,
       });
+
+      mapInstance.addControl(new maplibregl.NavigationControl(), "top-right");
+
+      mapInstance.on("error", (e) => {
+        console.error("MapLibre map error:", (e as any)?.error || e);
+      });
+
+      if (onMapClick) {
+        mapInstance.on("click", (e) => {
+          onMapClick(e.lngLat.lat, e.lngLat.lng);
+        });
+      }
+
+      map.current = mapInstance;
+    } catch (error) {
+      console.error("Failed to initialize MapLibre map:", error);
     }
 
-    map.current = mapInstance;
-
     return () => {
-      markersRef.current.forEach(marker => marker.remove());
-      markersRef.current = [];
-      mapInstance.remove();
+      if (markersRef.current.length) {
+        markersRef.current.forEach((marker) => marker.remove());
+        markersRef.current = [];
+      }
+
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
