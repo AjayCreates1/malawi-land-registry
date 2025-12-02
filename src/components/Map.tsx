@@ -1,7 +1,3 @@
-import { useEffect, useRef } from "react";
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-
 interface MapProps {
   center?: { lat: number; lng: number };
   zoom?: number;
@@ -16,108 +12,33 @@ interface MapProps {
 }
 
 const Map = ({ center = { lat: -13.9626, lng: 33.7741 }, zoom = 6, markers = [], onMapClick, height = "600px" }: MapProps) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
-
-  useEffect(() => {
-    if (!mapContainer.current || map.current) return;
-
-    try {
-      console.log("Initializing map with center:", center, "zoom:", zoom);
-
-      const mapInstance = new maplibregl.Map({
-        container: mapContainer.current,
-        style: "https://api.maptiler.com/maps/streets-v2/style.json?key=aQGSTvwPxi3wKiQwyNwz",
-        center: [center.lng, center.lat],
-        zoom,
-      });
-
-      mapInstance.addControl(new maplibregl.NavigationControl(), "top-right");
-
-      mapInstance.on("error", (e) => {
-        console.error("MapLibre map error:", (e as any)?.error || e);
-      });
-
-      if (onMapClick) {
-        mapInstance.on("click", (e) => {
-          onMapClick(e.lngLat.lat, e.lngLat.lng);
-        });
-      }
-
-      map.current = mapInstance;
-    } catch (error) {
-      console.error("Failed to initialize MapLibre map:", error);
-    }
-
-    return () => {
-      if (markersRef.current.length) {
-        markersRef.current.forEach((marker) => marker.remove());
-        markersRef.current = [];
-      }
-
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!map.current) return;
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-
-    // Add new markers
-    markers.forEach((markerData) => {
-      const el = document.createElement('div');
-      el.className = 'custom-marker';
-      el.style.cssText = `
-        background-color: #ef4444;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        border: 3px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        cursor: pointer;
-      `;
-
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([markerData.position.lng, markerData.position.lat])
-        .setPopup(
-          new maplibregl.Popup({ offset: 25 }).setHTML(
-            `<div style="padding: 8px;">
-              <strong style="font-size: 14px;">${markerData.title}</strong>
-              <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">
-                ${markerData.position.lat.toFixed(4)}, ${markerData.position.lng.toFixed(4)}
-              </p>
-            </div>`
-          )
-        )
-        .addTo(map.current!);
-
-      if (markerData.onClick) {
-        el.addEventListener('click', markerData.onClick);
-      }
-
-      markersRef.current.push(marker);
-    });
-
-    // Fit bounds to show all markers
-    if (markers.length > 0) {
-      const bounds = new maplibregl.LngLatBounds();
-      markers.forEach(marker => {
-        bounds.extend([marker.position.lng, marker.position.lat]);
-      });
-      map.current.fitBounds(bounds, { padding: 50, maxZoom: 12 });
-    }
-  }, [markers]);
+  // Build Google Maps embed URL with center and zoom
+  const embedUrl = `https://www.google.com/maps/embed/v1/view?key=AIzaSyBFw0Qbyq9zTFTd-tGY6dkeXj1CaU9dZQk&center=${center.lat},${center.lng}&zoom=${zoom}`;
 
   return (
     <div className="relative rounded-lg overflow-hidden border" style={{ height }}>
-      <div ref={mapContainer} className="w-full h-full" />
+      <iframe
+        src={embedUrl}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="w-full h-full"
+      />
+      {markers.length > 0 && (
+        <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur p-3 rounded-lg shadow-lg max-w-xs">
+          <p className="text-sm font-medium mb-2">Locations ({markers.length}):</p>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {markers.map((marker) => (
+              <div key={marker.id} className="text-xs text-muted-foreground">
+                • {marker.title}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
